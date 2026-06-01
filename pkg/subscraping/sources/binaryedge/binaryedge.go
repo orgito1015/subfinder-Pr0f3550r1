@@ -60,13 +60,13 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				"accept": "application/json",
 			})
 			if err != nil {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: err}
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("binaryedge page %d request failed: %w", page, err)}
 				s.errors++
 				session.DiscardHTTPResponse(resp)
 				return
 			}
 			if resp.StatusCode != 200 {
-				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("request failed with status %d", resp.StatusCode)}
+				results <- subscraping.Result{Source: s.Name(), Type: subscraping.Error, Error: fmt.Errorf("binaryedge page %d request failed with status %d", page, resp.StatusCode)}
 				s.errors++
 				session.DiscardHTTPResponse(resp)
 				return
@@ -90,12 +90,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				if subdomain == "" {
 					continue
 				}
-				switch {
-				case strings.HasSuffix(subdomain, "."+domain), subdomain == domain:
-				case !strings.Contains(subdomain, "."):
-					subdomain = subdomain + "." + domain
-				default:
-					continue
+				if !strings.HasSuffix(subdomain, "."+domain) && subdomain != domain {
+					if !strings.Contains(subdomain, ".") {
+						subdomain = subdomain + "." + domain
+					} else {
+						continue
+					}
 				}
 				select {
 				case <-ctx.Done():
