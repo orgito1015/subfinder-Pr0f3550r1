@@ -90,8 +90,12 @@ func (s *Source) Run(ctx context.Context, domain string, session *subscraping.Se
 				if subdomain == "" {
 					continue
 				}
-				if !strings.HasSuffix(subdomain, "."+domain) && subdomain != domain {
+				switch {
+				case strings.HasSuffix(subdomain, "."+domain), subdomain == domain:
+				case !strings.Contains(subdomain, "."):
 					subdomain = subdomain + "." + domain
+				default:
+					continue
 				}
 				select {
 				case <-ctx.Done():
