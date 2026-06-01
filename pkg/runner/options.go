@@ -248,6 +248,7 @@ func (options *Options) preProcessDomains() {
 }
 
 var defaultRateLimits = []string{
+	"binaryedge=1/s",
 	"github=30/m",
 	"fullhunt=60/m",
 	"pugrecon=10/s",
